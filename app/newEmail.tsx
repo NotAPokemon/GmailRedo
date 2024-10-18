@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
-function Menu(){
+function NewEmail(){
   const router = useRouter();
   const [subject, setSubject] = useState('')
   const [to, setTo] = useState('');
@@ -63,7 +63,7 @@ function Menu(){
   );
 }
 
-export default Menu;
+export default NewEmail;
 
 
 const styles = StyleSheet.create({
