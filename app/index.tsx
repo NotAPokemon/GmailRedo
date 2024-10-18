@@ -28,6 +28,7 @@ function app() {
     router.replace("/Settings")
   }
 
+  // @ts-ignore
   function readMessage(message){
     router.replace(`/message?subject=${encodeURIComponent(message.subject)}&from=${encodeURIComponent(message.from)}&date=${encodeURIComponent(message.date)}&body=${encodeURIComponent(message.body)}`);
   }
@@ -53,6 +54,7 @@ function app() {
     }
   }
 
+  // @ts-ignore
   async function getMessages(email, password, folder) {
     try {
       const response = await fetch('http://192.168.86.26:5555/get_email', {
@@ -73,7 +75,7 @@ function app() {
       console.error(error);
     }
   }
-
+  // @ts-ignore
   async function changeFolder(name){
     openMenu()
     setFolder(name)
@@ -100,10 +102,14 @@ function app() {
           setMessages(mes)
         }
         let data = await getFolders(emailS, passwordS)
+        // @ts-ignore
         function removeExtra(data) {
+          // @ts-ignore
           return data.map((str) => str.replace(/"/g, ''));
         }
+        // @ts-ignore
         function removeGmailLabels(arr) {
+          // @ts-ignore
           return arr.filter(str => !str.includes('[Gmail]'));
         }
         setTabs(removeGmailLabels(removeExtra(data)))
