@@ -85,8 +85,9 @@ function app() {
   }
 
 
-
+  
   useEffect(() => {
+    // @ts-ignore
     const checkLoginStatus = async () => {
       const emailS = await AsyncStorage.getItem('Email');
       const passwordS = await AsyncStorage.getItem('Password');
@@ -166,7 +167,7 @@ function app() {
               ))}
             </ScrollView>
             <View style={styles.botomBar}>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => {router.navigate("/newLabel")}}>
                 <Icon name='add' color= 'white'/>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => {openSettings()}}>

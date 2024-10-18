@@ -33,7 +33,7 @@ export default function RootLayout() {
         <Stack.Screen name="AuthHandler" options={{ headerShown: false }} />
         <Stack.Screen name="Settings" options={{ headerShown: false }} />
         <Stack.Screen name="message" options={{ headerShown: false }} />
-        <Stack.Screen name="newEmail" options={{ headerShown: false }} />
+        <Stack.Screen name="newLabel" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

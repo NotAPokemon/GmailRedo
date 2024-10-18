@@ -92,6 +92,13 @@ class EmailHandler:
     def handle_new_email(self, message):
         print("New email received!")
 
+    def new_folder(self, name):
+        try:
+            self.imap.create(name)
+            return True
+        except Exception as e:
+            return 'an error occured during creation: ' + str(e)
+
     def start_checking(self, interval):
         def run():
             while True:
@@ -101,13 +108,17 @@ class EmailHandler:
         threading.Thread(target=run, daemon=True).start()
 
     def send_email(self, recipient, subject, body):
-        msg = MIMEMultipart()
-        msg['From'] = self.email
-        msg['To'] = recipient
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
-        self.smtp.send_message(msg)
-        print(f"Email sent successfully to {recipient}")
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = self.email
+            msg['To'] = recipient
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain'))
+            self.smtp.send_message(msg)
+            print(f"Email sent successfully to {recipient}")
+            return True, 'none'
+        except Exception as e:
+            return False, 'error occured while sending email: ' + str(e)
 
     def move_email(self, msg_id, destination):
         self.imap.copy(msg_id, destination)
@@ -145,6 +156,7 @@ def openFolder():
     emailHandler = EmailHandler(data['email'], data['password'])
     emailHandler.login()
     result = emailHandler.open_folder(data['folder'])
+    emailHandler.logout()
     return jsonify({'status': result})
 
 @app.route('/get_email', methods=['POST'])
@@ -168,6 +180,26 @@ def getAllFolders():
     result = emailHandler.get_all_folders()
     emailHandler.logout()
     return jsonify({"folders": result})
+
+@app.route('/new_folder', methods=['POST'])
+def createNewFolder():
+    data = request.json
+    emailHandler = EmailHandler(data['email'], data['password'])
+    emailHandler.login()
+    result = emailHandler.new_folder(data['name'])
+    emailHandler.logout()
+    return jsonify({'result': result})
+
+
+@app.route('/send_email', methods=['POST'])
+def sendMail():
+    data = request.json
+    emailHandler = EmailHandler(data['email'], data['password'])
+    emailHandler.login()
+    result, error = emailHandler.send_email(data['to'], data['subject'], data['body'])
+    emailHandler.logout()
+    return jsonify({'result': result, 'status': error})
+
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5555)
