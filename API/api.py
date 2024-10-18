@@ -1,3 +1,4 @@
+import email
 import imaplib
 import smtplib
 from email.mime.text import MIMEText
@@ -19,7 +20,7 @@ class EmailHandler:
 
     def login(self):
         try:
-            self.imap = imaplib.IMAP4_SSL(self.host)
+            self.imap = imaplib.IMAP4_SSL(self.host, 993)
             self.imap.login(self.email, self.password)
             
             self.smtp = smtplib.SMTP('smtp.gmail.com', 587)
@@ -39,15 +40,35 @@ class EmailHandler:
         return 'True'
 
     def get_all_folders(self):
-        return self.imap.list()
+        status, labels = self.imap.list()
+
+        if status == 'OK':
+            # Extract and print label names
+            label_names = [label.decode().split(' "/" ')[-1] for label in labels]
+            return label_names
+        else:
+            return 'error'
 
     def get_messages(self):
         result, data = self.imap.search(None, 'ALL')
         message_ids = data[0].split()
         messages = []
-        for msg_id in message_ids:
+
+        for msg_id in message_ids[::-1]:
             result, msg_data = self.imap.fetch(msg_id, '(RFC822)')
-            messages.append(msg_data[0][1])
+            raw_email = msg_data[0][1]
+
+            # Parse the raw email to get headers and body
+            msg = email.message_from_bytes(raw_email)
+
+            # Build the result dictionary safely
+            messages.append({
+                "subject": msg.get("subject", "No Subject"),
+                "from": msg.get("from", "Unknown Sender"),
+                "date": msg.get("date", "No Date"),
+                'body': get_body(msg)
+            })
+
         return messages
 
     def close_folder(self):
@@ -94,6 +115,8 @@ class EmailHandler:
         self.imap.expunge()
 
 
+def remove_extra(arg) -> list:
+    return [s.replace('"', '') for s in arg]
 
 def get_body(msg):
     """Extracts the body from an email message."""
@@ -131,10 +154,20 @@ def getEmails():
     emailHandler.login()
     emailHandler.open_folder(data['folder'])
     list = emailHandler.get_messages()
-    result = [{"subject": msg["subject"], "from": msg["from"], "date": msg["date"], 'body': get_body(msg)} for msg in list]
+    result = [{"subject": msg["subject"], "from": msg["from"], "date": msg["date"], 'body': msg['body']} for msg in list]
     emailHandler.close_folder()
     emailHandler.logout()
     return jsonify({"messages": result})
+
+@app.route('/get_all_folders', methods=['POST'])
+def getAllFolders():
+    data = request.json
+    emailHandler = EmailHandler(data['email'], data['password'])
+    emailHandler.login()
+    emailHandler.open_folder('[Gmail]')
+    result = emailHandler.get_all_folders()
+    emailHandler.logout()
+    return jsonify({"folders": result})
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5555)

@@ -82,18 +82,20 @@ function Settings() {
           <Text style={styles.errorText}>
               {error}
           </Text>
-          <TouchableOpacity style={styles.lougoutContainer} onPress={() => router.navigate("/AuthHandler")}>
-              <Text style={styles.submitText}>
-                  Logout  
-              </Text>
-              <Icon name='logout' color='white'/>
-          </TouchableOpacity>
-          <Text></Text>
-          <TouchableOpacity onPress={() => router.navigate('/')}>
-              <Text style={styles.submitText}>
-                  Go Back
-              </Text>
-          </TouchableOpacity>
+          <View style = {styles.exitButtons}>
+            <TouchableOpacity style={styles.lougoutContainer} onPress={() => router.navigate("/AuthHandler")}>
+                <Text style={styles.submitText}>
+                    Logout  
+                </Text>
+                <Icon style={styles.exitIcon} name='logout' color='white'/>
+            </TouchableOpacity>
+            <Text></Text>
+            <TouchableOpacity onPress={() => router.navigate('/')}>
+                <Text style={styles.submitText}>
+                    Go Back
+                </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </ImageBackground>
@@ -154,9 +156,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   saveContainer: {
-    height: height * 0.2,
+    height: height * 0.05,
     width: width * 0.2,
-    backgroundColor: 'rgb(0,0,255)'
+    backgroundColor: 'rgb(0,0,255)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: height * 0.01,
+    marginLeft: width * 0.15
+  },
+  exitButtons: {
+    flexDirection: "row",
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exitIcon: {
+    marginRight: width * 0.1,
+    marginLeft: width * 0.025,
   }
   
   

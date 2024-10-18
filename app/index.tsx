@@ -13,6 +13,12 @@ function app() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isClosed, setClosed] = useState(true)
+  const [tabs, setTabs] = useState([])
+  const [messages, setMessages] = useState([{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..'}])
+  const [folder, setFolder] = useState('')
+
+
+  const defaut = [{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..'}]
 
   function openMenu(){
     setClosed(!isClosed)
@@ -22,38 +28,136 @@ function app() {
     router.replace("/Settings")
   }
 
+  function readMessage(message){
+    router.replace(`/message?subject=${encodeURIComponent(message.subject)}&from=${encodeURIComponent(message.from)}&date=${encodeURIComponent(message.date)}&body=${encodeURIComponent(message.body)}`);
+  }
+
+  async function getFolders(email: string, password: string) {
+    try {
+      const response = await fetch('http://192.168.86.26:5555/get_all_folders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password}),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch emails');
+      }
+
+      const data = await response.json();
+      return data.folders
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function getMessages(email, password, folder) {
+    try {
+      const response = await fetch('http://192.168.86.26:5555/get_email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, folder}),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch emails');
+      }
+
+      const data = await response.json();
+      return data.messages
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function changeFolder(name){
+    openMenu()
+    setFolder(name)
+    setMessages(defaut)
+    let data = await getMessages(email , password, name)
+    setMessages(data)
+  }
+
+
+
   useEffect(() => {
     const checkLoginStatus = async () => {
       const emailS = await AsyncStorage.getItem('Email');
       const passwordS = await AsyncStorage.getItem('Password');
+      const folderS = await AsyncStorage.getItem('DefaultFolder')
 
       if (emailS !== null && passwordS !== null) {
         setIsLoggedIn(true);
         setEmail(emailS)
         setPassword(passwordS)
-
+        if (folderS !==null){
+          setFolder(folderS)
+          let mes = await getMessages(emailS, passwordS, folderS)
+          setMessages(mes)
+        }
+        let data = await getFolders(emailS, passwordS)
+        function removeExtra(data) {
+          return data.map((str) => str.replace(/"/g, ''));
+        }
+        function removeGmailLabels(arr) {
+          return arr.filter(str => !str.includes('[Gmail]'));
+        }
+        setTabs(removeGmailLabels(removeExtra(data)))
       } else {
         setIsLoggedIn(false);
         router.replace("/AuthHandler")
       }
     };
+  
 
     checkLoginStatus();
   }, []);
 
+
   return (
     <View style = {styles.container}>
         {isLoggedIn ? ( isClosed ?
-          (<View>
-            <TouchableOpacity style={styles.iconContainerClosed} onPress={() => {openMenu()}}>
-              <Icon style = {styles.iconStyleClosed} name="menu" color = "white"/>
-            </TouchableOpacity>
-          </View>) : (
+          (
+          <View>
+            <View style={{flexDirection:'row', borderBottomWidth:  height * 0.005, borderColor: "rgb(35,35,35)"}}>
+              <TouchableOpacity style={styles.iconContainerClosed} onPress={() => {openMenu()}}>
+                <Icon style = {styles.iconStyleClosed} name="menu" color = "white"/>
+              </TouchableOpacity>
+              <Text style={styles.title}>{folder}</Text>
+            </View>
+            <ScrollView style={{height:height, width: width}}>
+              {Array.isArray(messages) && messages.length > 0 ? (
+                  messages.map((item, index) => (
+                    <TouchableOpacity key={index} onPress={() => readMessage(item)}>
+                      <View style={styles.messageContainer}>
+                        <Text style={styles.messageSubject}>{item.subject}</Text>
+                        <Text style={styles.messageFrom}>{item.from}</Text>
+                        <Text style={styles.messageFrom}>{item.date}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <Text style={{ color: 'white' }}>No messages available.</Text>
+                )}
+            </ScrollView>
+          </View>
+          ) : (
           <View style = {styles.sideBarcont}>
             <TouchableOpacity style={styles.iconContainerOpen} onPress={() => {openMenu()}}>
               <Icon style = {styles.iconStyleOpen} name="menu" color = "white"/>
             </TouchableOpacity>
             <ScrollView style = {styles.labelScrollVeiw}>
+              {tabs.map((item, index) => (
+                <TouchableOpacity key={index} onPress={() => changeFolder(item)}>
+                  <View style={styles.tab}>
+                    <Text style={styles.tabText}>{item}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
             <View style={styles.botomBar}>
               <TouchableOpacity>
@@ -80,11 +184,28 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     backgroundColor: 'rgb(40,40,40)',
   },
+  messageContainer:{
+    height: height * 0.2,
+    width: width * 0.8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgb(60,60,60)',
+    borderRadius: height * 0.01,
+    marginLeft: width * 0.1,
+    marginBottom: height * 0.05,
+  },
+  messageSubject: {
+    color: "white",
+    fontSize: width * 0.05,
+  },
+  messageFrom: {
+    color: "white",
+    fontSize: width * 0.025,
+  },
   title: {
-    marginTop: width * 0.2,
     color: "white",
     fontSize: Math.min(width, height) * 0.15,
-    marginBottom: height * 0.05
+    marginTop: height * 0.01,
   },
   iconContainerOpen: {
     height: height * 0.03 + 3,
@@ -100,7 +221,7 @@ const styles = StyleSheet.create({
   },
   iconContainerClosed: {
     marginTop: height * 0.005,
-    marginRight: width * 0.8,
+    marginRight: width * 0.1,
   },
   labelScrollVeiw: {
     width: '100%',
@@ -124,4 +245,16 @@ const styles = StyleSheet.create({
     width: width * 0.75,
     padding: 5,
   },
+  tab: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "rgb(60,60,60)",
+    height: height * 0.075,
+    width: width * 0.6,
+    marginBottom: height * 0.02,
+    borderRadius: height * 0.01,
+  },
+  tabText: {
+    color: 'white'
+  }
 });
