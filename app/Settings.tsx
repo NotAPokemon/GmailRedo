@@ -1,27 +1,46 @@
-import { Link, router, Stack, useRouter } from 'expo-router';
-import { useState } from 'react';
+import {router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, Dimensions, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Icon } from 'react-native-elements';
 
 
 const { width, height } = Dimensions.get('window');
 
 
-function AuthHandler() {
-  const [email, setEmail] = useState(' ')
-  const [password, setPassword] = useState('')
-  const [message, setMessages] = useState('Submit')
+function Settings() {
+  const [folder, setFolder] = useState(' ')
   const [error, setError] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
 
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const emailS = await AsyncStorage.getItem('Email');
+      const passwordS = await AsyncStorage.getItem('Password');
+      const def = await AsyncStorage.getItem('DefaultFolder')
+
+      if (emailS !== null && passwordS !== null) {
+        setEmail(emailS)
+        setPassword(passwordS)
+
+      }
+      if (def !== null){
+        setFolder(def)
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
   async function handleSubmit(){
     try {
-        const response = await fetch('http://192.168.86.26:5555/login', {
+        const response = await fetch('http://192.168.86.26:5555/open_folder', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email, password}),
+          body: JSON.stringify({ email, password, folder}),
         });
   
         if (!response.ok) {
@@ -29,11 +48,9 @@ function AuthHandler() {
         }
   
         const data = await response.json();
-        if (data.status == 'Login successful'){
-            setMessages(data.status);
-            AsyncStorage.setItem('Email', email)
-            AsyncStorage.setItem('Password', password)
-            router.push("/")
+        if (data.status == 'True'){
+            setError(data.status);
+            AsyncStorage.setItem('DefaultFolder', folder)
         } else {
             setError(data.status)
         }
@@ -43,38 +60,47 @@ function AuthHandler() {
 
   }
 
+
   return (
     <ImageBackground  style = {styles.background} source = {require('@/assets/images/background.png')}>
       <View style={styles.container}>
         <View>
           <Text style={styles.title}>
-            Login
+            Settings
           </Text>
         </View>
         <View style={styles.input}>
-          <Text style={styles.inputText}>Email:           </Text>
-          <TextInput style={styles.inputFeild} value={email} onChangeText={setEmail} keyboardType="email-address"/>
-        </View>
-        <View style={styles.input}>
-          <Text style={styles.inputText}>Password:    </Text>
-          <TextInput style={styles.inputFeild} value={password} onChangeText={setPassword} secureTextEntry={true}/>
+          <Text style={styles.inputText}>Default Folder:  </Text>
+          <TextInput style={styles.inputFeild} value={folder} onChangeText={setFolder}/>
         </View>
         <View>
-          <TouchableOpacity onPress={handleSubmit}>
+          <TouchableOpacity style={styles.saveContainer} onPress={handleSubmit}>
               <Text style={styles.submitText}>
-                  {message}
+                  Save
               </Text>
           </TouchableOpacity>
           <Text style={styles.errorText}>
               {error}
           </Text>
+          <TouchableOpacity style={styles.lougoutContainer} onPress={() => router.navigate("/AuthHandler")}>
+              <Text style={styles.submitText}>
+                  Logout  
+              </Text>
+              <Icon name='logout' color='white'/>
+          </TouchableOpacity>
+          <Text></Text>
+          <TouchableOpacity onPress={() => router.navigate('/')}>
+              <Text style={styles.submitText}>
+                  Go Back
+              </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ImageBackground>
   );
 }
 
-export default AuthHandler;
+export default Settings;
 
 const styles = StyleSheet.create({
   container: {
@@ -118,11 +144,21 @@ const styles = StyleSheet.create({
   submitText: {
     color: 'white',
     fontSize: Math.min(width, height) * 0.045,
-    marginTop: height * 0.1
   },
   errorText: {
     color: 'red',
     fontSize: Math.min(width, height) * 0.045,
     marginTop: height * 0.01
+  },
+  lougoutContainer: {
+    flexDirection: 'row'
+  },
+  saveContainer: {
+    height: height * 0.2,
+    width: width * 0.2,
+    backgroundColor: 'rgb(0,0,255)'
   }
+  
+  
+
 });

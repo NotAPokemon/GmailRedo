@@ -31,6 +31,7 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="AuthHandler" options={{ headerShown: false }} />
+        <Stack.Screen name="Settings" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

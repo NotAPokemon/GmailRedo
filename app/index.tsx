@@ -1,9 +1,8 @@
 import { Link, Stack, router } from 'expo-router';
-import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity,  } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity, ScrollView,  } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState, } from "react";
 import { Icon } from 'react-native-elements';
-import Menu from "./menu"
 
 
 const { width, height } = Dimensions.get('window');
@@ -13,14 +12,14 @@ function app() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isOpen, setOpen] = useState(false)
-
-  const menu = (
-    <Menu/>
-  );
+  const [isClosed, setClosed] = useState(true)
 
   function openMenu(){
-    setOpen(!isOpen)
+    setClosed(!isClosed)
+  }
+
+  function openSettings(){
+    router.replace("/Settings")
   }
 
   useEffect(() => {
@@ -44,18 +43,25 @@ function app() {
 
   return (
     <View style = {styles.container}>
-        {isLoggedIn ? ( isOpen ?
+        {isLoggedIn ? ( isClosed ?
           (<View>
-            <TouchableOpacity onPress={() => {openMenu()}}>
+            <TouchableOpacity style={styles.iconContainerClosed} onPress={() => {openMenu()}}>
               <Icon style = {styles.iconStyleClosed} name="menu" color = "white"/>
             </TouchableOpacity>
           </View>) : (
           <View style = {styles.sideBarcont}>
-            <TouchableOpacity onPress={() => {openMenu()}}>
+            <TouchableOpacity style={styles.iconContainerOpen} onPress={() => {openMenu()}}>
               <Icon style = {styles.iconStyleOpen} name="menu" color = "white"/>
             </TouchableOpacity>
-            <View>
-
+            <ScrollView style = {styles.labelScrollVeiw}>
+            </ScrollView>
+            <View style={styles.botomBar}>
+              <TouchableOpacity>
+                <Icon name='add' color= 'white'/>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {openSettings()}}>
+                <Icon name='settings' color= 'white'/>
+              </TouchableOpacity>
             </View>
           </View>)
         )
@@ -80,19 +86,42 @@ const styles = StyleSheet.create({
     fontSize: Math.min(width, height) * 0.15,
     marginBottom: height * 0.05
   },
+  iconContainerOpen: {
+    height: height * 0.03 + 3,
+    width: width * 0.2,
+    alignItems: "flex-start",
+    marginRight: width,
+    marginBottom: height * 0.03 + 3,
+  },
   iconStyleOpen: {
-    marginRight: width * 0.2,
-    marginTop: height * 0.03
+    marginLeft: width * 0.03,
+    marginTop: height * 0.03,
+    height: height * 0.03,
+  },
+  iconContainerClosed: {
+    marginTop: height * 0.005,
+    marginRight: width * 0.8,
+  },
+  labelScrollVeiw: {
+    width: '100%',
+    height: height * 0.8,
+    flex: 1,
   },
   iconStyleClosed: {
-    marginRight: width * 0.8,
     marginTop: height * 0.03
   },
+  botomBar:{
+    height: height * 0.05 + 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: height * 0.005,
+    borderColor: "rgb(35,35,35)"
+  },
   sideBarcont: {
-    flexDirection: "row",
+    flexDirection: "column",
     backgroundColor: "rgb(20,20,20)",
     height: height,
-    width: width * 0.6,
+    width: width * 0.75,
     padding: 5,
   },
 });

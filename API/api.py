@@ -32,7 +32,11 @@ class EmailHandler:
             return "IMAP login failed"
 
     def open_folder(self, folder_name="INBOX"):
-        self.imap.select(folder_name)
+        try:
+            self.imap.select(mailbox=str(folder_name.strip()))
+        except Exception as e:
+            return "False " + str(e) + str(folder_name)
+        return 'True'
 
     def get_all_folders(self):
         return self.imap.list()
@@ -110,6 +114,15 @@ def login():
     result = emailHandler.login()
     emailHandler.logout()
     return jsonify({"status":result })
+
+
+@app.route("/open_folder", methods=['POST'])
+def openFolder():
+    data = request.json
+    emailHandler = EmailHandler(data['email'], data['password'])
+    emailHandler.login()
+    result = emailHandler.open_folder(data['folder'])
+    return jsonify({'status': result})
 
 @app.route('/get_email', methods=['POST'])
 def getEmails():
