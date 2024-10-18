@@ -13,7 +13,7 @@ function app() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isClosed, setClosed] = useState(true)
-  const [tabs, setTabs] = useState([])
+  const [tabs, setTabs] = useState(['Loading tabs..'])
   const [messages, setMessages] = useState([{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..'}])
   const [folder, setFolder] = useState('')
 
