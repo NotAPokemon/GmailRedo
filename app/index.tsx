@@ -191,7 +191,7 @@ function app() {
         router.replace(`/AuthHandler?folder=${encodeURIComponent(folder)}`)
       }
     };
-  
+
 
     checkLoginStatus();
   }, []);
