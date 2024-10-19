@@ -1,4 +1,4 @@
-import { Link, Stack, router } from 'expo-router';
+import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity, ScrollView,  } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState, } from "react";
@@ -16,6 +16,15 @@ function app() {
   const [tabs, setTabs] = useState(['Loading tabs..'])
   const [messages, setMessages] = useState([{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..', 'seen': false}])
   const [folder, setFolder] = useState('')
+  const [deleteMode, setDeleteMode] = useState(false)
+  const params = useLocalSearchParams();
+
+  useEffect(() => {
+    if (params.folder) {
+      // @ts-ignore
+      setFolder(params.folder)
+    }
+  }, [params.folder]);
 
 
   const defaut = [{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..', 'seen' : false}]
@@ -25,12 +34,12 @@ function app() {
   }
 
   function openSettings(){
-    router.replace("/Settings")
+    router.replace(`/Settings?folder=${encodeURIComponent(folder)}`)
   }
 
   // @ts-ignore
   function readMessage(message){
-    router.replace(`/message?subject=${encodeURIComponent(message.subject)}&from=${encodeURIComponent(message.from)}&date=${encodeURIComponent(message.date)}&body=${encodeURIComponent(message.body)}`);
+    router.replace(`/message?subject=${encodeURIComponent(message.subject)}&from=${encodeURIComponent(message.from)}&date=${encodeURIComponent(message.date)}&body=${encodeURIComponent(message.body)}&folder=${encodeURIComponent(folder)}`);
   }
 
   async function getFolders(email: string, password: string) {
@@ -75,13 +84,61 @@ function app() {
       console.error(error);
     }
   }
+
+  // @ts-ignore
+  async function deleteFolder(name) {
+    try {
+      const response = await fetch('http://192.168.86.26:5555/delete_folder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, name}),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete folder');
+      }
+
+      const data = await response.json();
+      
+      return data
+
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   // @ts-ignore
   async function changeFolder(name){
-    openMenu()
-    setFolder(name)
-    setMessages(defaut)
-    let data = await getMessages(email , password, name)
-    setMessages(data)
+    if (!deleteMode){
+      openMenu()
+      setFolder(name)
+      setMessages(defaut)
+      let data = await getMessages(email , password, name)
+      setMessages(data)
+    } else {
+      setDeleteMode(false)
+      let res = await deleteFolder(name)
+      if (!res.result){
+        console.error(res.status)
+      }
+      if (folder !==null){
+          let data = await getFolders(email, password)
+          // @ts-ignore
+          function removeExtra(data) {
+            // @ts-ignore
+            return data.map((str) => str.replace(/"/g, ''));
+          }
+          // @ts-ignore
+          function removeGmailLabels(arr) {
+            // @ts-ignore
+            return arr.filter(str => !str.includes('[Gmail]'));
+          }
+          setTabs(removeGmailLabels(removeExtra(data)))
+      }
+      setDeleteMode(false)
+    }
   }
 
 
@@ -99,6 +156,21 @@ function app() {
         setPassword(passwordS)
         if (folderS !==null){
           setFolder(folderS)
+          // @ts-ignore
+          let useFolder;
+          try{
+            useFolder = params.folder
+            if (params.folder.length > 2){
+              // @ts-ignore
+              setFolder(params.folder)
+            } else{
+              useFolder = folderS
+            }
+          } catch{
+            useFolder = folderS
+            setFolder(folderS)
+          }
+
           let data = await getFolders(emailS, passwordS)
           // @ts-ignore
           function removeExtra(data) {
@@ -111,12 +183,12 @@ function app() {
             return arr.filter(str => !str.includes('[Gmail]'));
           }
           setTabs(removeGmailLabels(removeExtra(data)))
-          let mes = await getMessages(emailS, passwordS, folderS)
+          let mes = await getMessages(emailS, passwordS, useFolder)
           setMessages(mes)
         }
       } else {
         setIsLoggedIn(false);
-        router.replace("/AuthHandler")
+        router.replace(`/AuthHandler?folder=${encodeURIComponent(folder)}`)
       }
     };
   
@@ -167,11 +239,17 @@ function app() {
               ))}
             </ScrollView>
             <View style={styles.botomBar}>
-              <TouchableOpacity onPress={()=> router.navigate('/newLabel')}>
+              <TouchableOpacity onPress={()=> router.navigate(`/newLabel?folder=${encodeURIComponent(folder)}`)}>
                 <Icon name='add' color= 'white'/>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={()=> setDeleteMode(true)}>
+                <Icon name='remove' color= 'white'/>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => {openSettings()}}>
                 <Icon name='settings' color= 'white'/>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.send} onPress={() => {router.replace(`/newEmail?folder=${encodeURIComponent(folder)}`)}}>
+                <Icon name='send' color= 'white'/>
               </TouchableOpacity>
             </View>
           </View>)
@@ -190,6 +268,9 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     paddingTop: 0,
     backgroundColor: 'rgb(40,40,40)',
+  },
+  send: {
+    marginLeft: (width*0.75) * 0.625
   },
   messageContainerSeen:{
     height: height * 0.2,

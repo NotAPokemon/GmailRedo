@@ -1,7 +1,8 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, Dimensions, TouchableOpacity, ScrollView, TextInput,  } from 'react-native';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Icon } from 'react-native-elements';
 
 const { width, height } = Dimensions.get('window');
 
@@ -11,10 +12,14 @@ function NewEmail(){
   const [subject, setSubject] = useState('')
   const [to, setTo] = useState('');
   const [body, setBody] = useState('')
-  if (params.to !== null){
-    // @ts-ignore
-    setTo(params.to)
-  }
+
+  
+  useEffect(() => {
+    if (params.to) {
+        // @ts-ignore
+      setTo(params.to);
+    }
+  }, [params.to]);
 
   async function handelClick() {
     try {
@@ -34,7 +39,8 @@ function NewEmail(){
   
         const data = await response.json();
         if (data.result == true){
-            router.push('/')
+            //@ts-ignore
+            router.push(`/?folder=${encodeURIComponent(params.folder)}`)
         } else {
             setSubject(data.status)
         }
@@ -50,17 +56,16 @@ function NewEmail(){
             <TextInput style={styles.title} value={subject} onChangeText={setSubject} numberOfLines={2} />
             <TextInput style = {styles.lowerText} value={to} onChangeText={setTo}/>
         </View>
-        <ScrollView style={{height:height * 0.82, width: width}}>
+        <ScrollView style={{height:height * 0.75, width: width}}>
             <TextInput style={styles.lowerText} value={body} onChangeText={setBody} />
         </ScrollView>
         <View style={styles.bottomBar}>
-            <TouchableOpacity onPress={() => {router.navigate('/')}}>
+            <TouchableOpacity onPress={() => {// @ts-ignore
+            router.navigate(`/?folder=${encodeURIComponent(params.folder)}`)}}>
                 <Text style={styles.text}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {handelClick}}>
-                <Text style={styles.text}>
-                    Send
-                </Text>
+            <TouchableOpacity style={styles.send} onPress={() => {handelClick()}}>
+                <Icon name='send' color= 'white'/>
             </TouchableOpacity>
         </View>
     </View>
@@ -76,8 +81,12 @@ const styles = StyleSheet.create({
         fontSize: (Math.min(width, height) * 0.1),
         marginTop: height * 0.02,
         borderBottomWidth: height * 0.005,
-        borderColor: 'rgb(10,10,10)'
+        borderColor: 'rgb(10,10,10)',
+        width: width,
       },
+    send: {
+        marginLeft: width * 0.03
+    },
     topBar: {
         borderBottomWidth:  height * 0.005,
          borderColor: "rgb(35,35,35)", 
@@ -85,7 +94,7 @@ const styles = StyleSheet.create({
          alignItems: 'center'
     },
     bottomBar: {
-        flexDirection:'row', 
+        flexDirection:'column-reverse', 
         borderTopWidth:  height * 0.005, 
         borderColor: "rgb(35,35,35)", 
         justifyContent: 'center',
@@ -97,11 +106,13 @@ const styles = StyleSheet.create({
     },
     lowerText:{
         color: 'white',
-        fontSize: width * 0.03,
+        fontSize: width * 0.05,
         borderBottomWidth: height * 0.005,
-        borderColor: 'rgb(10,10,10)'
+        borderColor: 'rgb(10,10,10)',
+        width: width
     },
     background: {
         backgroundColor:'rgb(40,40,40)'
-    }
+    },
+    
   });

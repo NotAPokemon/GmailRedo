@@ -67,6 +67,7 @@ function Menu(){
 
 
   return (
+
     <View style={styles.background}>
         <View style={styles.topBar}>
             <Text style={styles.title} adjustsFontSizeToFit
@@ -78,7 +79,8 @@ function Menu(){
             <View>{renderBodyWithLinks(body)}</View>
         </ScrollView>
         <View style={styles.bottomBar}>
-            <TouchableOpacity onPress={() => {router.navigate('/')}}>
+            <TouchableOpacity onPress={() => {// @ts-ignore
+                router.navigate(`/?folder=${encodeURIComponent(params.folder)}`)}}>
                 <Text style={styles.text}>Go Back</Text>
             </TouchableOpacity>
         </View>
@@ -127,7 +129,8 @@ const styles = StyleSheet.create({
         textDecorationLine: 'underline',
     },
     background: {
-        backgroundColor:'rgb(40,40,40)'
+        backgroundColor:'rgb(40,40,40)',
+        height: height
     }
   });
 

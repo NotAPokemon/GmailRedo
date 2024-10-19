@@ -110,6 +110,17 @@ class EmailHandler:
             return True
         except Exception as e:
             return 'an error occured during creation: ' + str(e)
+        
+    def delete_folder(self, name):
+        if self.open_folder(name) == 'True':
+            self.close_folder()
+            try:
+                self.imap.delete(name)
+                return True, 'works'
+            except Exception as e:
+                return False, 'an error occured during deletion' + str(e)
+        else:
+            return False, self.open_folder(name)
 
     def send_email(self, recipient, subject, body):
         try:
@@ -212,6 +223,16 @@ def sendMail():
     result, error = emailHandler.send_email(data['to'], data['subject'], data['body'])
     emailHandler.logout()
     return jsonify({'result': result, 'status': error})
+
+@app.route('/delete_folder', methods=['POST'])
+def deleteFolder():
+    data = request.json
+    emailHandler = EmailHandler(data['email'], data['password'])
+    emailHandler.login()
+    result, error = emailHandler.delete_folder(data['name'])
+    emailHandler.logout()
+    return jsonify({'result': result, 'status': error})
+
 
 
 

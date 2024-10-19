@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity, ScrollView, TextInput,  } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Icon } from 'react-native-elements';
@@ -9,6 +9,7 @@ const { width, height } = Dimensions.get('window');
 function NewFolder(){
   const [name, setName] = useState('')
   const [error, setError] = useState('')
+  const params = useLocalSearchParams()
 
   async function handleSubmit(){
     try {
@@ -28,7 +29,8 @@ function NewFolder(){
   
         const data = await response.json();
         if (data.result == true){
-            router.push('/')
+            //@ts-ignore
+            router.push(`/?folder=${encodeURIComponent(params.folder)}`)
         } else {
             setError(data)
         }
@@ -57,7 +59,8 @@ function NewFolder(){
           </TouchableOpacity>
           <Text style={styles.errorText}>{error}</Text>
           <View style = {styles.exitButtons}>
-            <TouchableOpacity style={styles.lougoutContainer} onPress={() => router.navigate("/AuthHandler")}>
+            <TouchableOpacity style={styles.lougoutContainer} onPress={ // @ts-ignore
+                () => router.navigate(`/AuthHandler?folder=${encodeURIComponent(params.folder)}`)}>
                 <Text style={styles.submitText}>
                     Cancel  
                 </Text>
