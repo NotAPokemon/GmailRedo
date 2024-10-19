@@ -24,7 +24,8 @@ function NewFolder(){
         });
   
         if (!response.ok) {
-          throw new Error('Failed to fetch emails');
+          console.log('Failed to create folder');
+          return;
         }
   
         const data = await response.json();

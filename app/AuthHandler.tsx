@@ -25,7 +25,8 @@ function AuthHandler() {
         });
   
         if (!response.ok) {
-          throw new Error('Failed to fetch emails');
+          console.log('Failed to login');
+          return;
         }
   
         const data = await response.json();

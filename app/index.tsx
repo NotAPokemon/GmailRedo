@@ -75,7 +75,8 @@ function app() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch emails');
+        console.log('Failed to fetch emails');
+        return;
       }
 
       const data = await response.json();
@@ -97,7 +98,8 @@ function app() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete folder');
+        console.log('Failed to delete folder');
+        return;
       }
 
       const data = await response.json();

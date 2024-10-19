@@ -34,7 +34,8 @@ function NewEmail(){
         });
   
         if (!response.ok) {
-          throw new Error('Failed to fetch emails');
+          console.log('Failed to send email');
+          return;
         }
   
         const data = await response.json();
