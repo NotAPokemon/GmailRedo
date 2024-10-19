@@ -130,7 +130,6 @@ class EmailHandler:
             msg['Subject'] = subject
             msg.attach(MIMEText(body, 'plain'))
             self.smtp.send_message(msg)
-            print(f"Email sent successfully to {recipient}")
             return True, 'none'
         except Exception as e:
             return False, 'error occured while sending email: ' + str(e)
