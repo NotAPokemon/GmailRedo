@@ -85,8 +85,9 @@ function app() {
   }
 
 
-
+  
   useEffect(() => {
+    // @ts-ignore
     const checkLoginStatus = async () => {
       const emailS = await AsyncStorage.getItem('Email');
       const passwordS = await AsyncStorage.getItem('Password');
