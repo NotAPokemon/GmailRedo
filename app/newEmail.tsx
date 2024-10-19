@@ -1,5 +1,5 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, View, Text, Dimensions, TouchableOpacity, ScrollView, TextInput,  } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, TouchableOpacity, ScrollView, TextInput, TouchableWithoutFeedback, Keyboard,  } from 'react-native';
 import {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Icon } from 'react-native-elements';
@@ -49,26 +49,39 @@ function NewEmail(){
       }
   }
 
+  
 
   return (
-    <View style={styles.background}>
-        <View style={styles.topBar}>
-            <TextInput style={styles.title} value={subject} onChangeText={setSubject} numberOfLines={2} />
-            <TextInput style = {styles.lowerText} value={to} onChangeText={setTo}/>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.background}>
+            <View style={styles.topBar}>
+                <View style={styles.textContainer}>
+                    <Text style={styles.title}>Subject:  </Text>
+                    <TextInput style={[styles.title, {width: width}]} value={subject} onChangeText={setSubject} numberOfLines={2} />
+                </View>
+                <View style={styles.textContainer}>
+                    <Text style={styles.lowerText}>Recipients:  </Text>
+                    <TextInput style = {[styles.lowerText, {width: width}]} value={to} onChangeText={setTo} keyboardType='email-address'/>
+                </View>
+            </View>
+            <ScrollView style={{height:height * 0.75, width: width}}>
+                <View style={styles.bodytextCont}>
+                    <ScrollView style={{height: height * 0.5}}>
+                        <TextInput style={[styles.lowerText, {width: width * 0.95, height: height * 0.2}]} value={body} onChangeText={setBody} multiline={true}/>
+                    </ScrollView>
+                </View>
+            </ScrollView>
+            <View style={styles.bottomBar}>
+                <TouchableOpacity onPress={() => {// @ts-ignore
+                router.navigate(`/?folder=${encodeURIComponent(params.folder)}`)}}>
+                    <Text style={styles.text}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.send} onPress={() => {handelClick()}}>
+                    <Icon name='send' color= 'white'/>
+                </TouchableOpacity>
+            </View>
         </View>
-        <ScrollView style={{height:height * 0.75, width: width}}>
-            <TextInput style={styles.lowerText} value={body} onChangeText={setBody} />
-        </ScrollView>
-        <View style={styles.bottomBar}>
-            <TouchableOpacity onPress={() => {// @ts-ignore
-            router.navigate(`/?folder=${encodeURIComponent(params.folder)}`)}}>
-                <Text style={styles.text}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.send} onPress={() => {handelClick()}}>
-                <Icon name='send' color= 'white'/>
-            </TouchableOpacity>
-        </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -80,10 +93,20 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: (Math.min(width, height) * 0.1),
         marginTop: height * 0.02,
+      },
+    textContainer: {
         borderBottomWidth: height * 0.005,
         borderColor: 'rgb(10,10,10)',
         width: width,
-      },
+        flexDirection: 'row'
+    },
+    bodytextCont:{
+        borderBottomWidth: height * 0.005,
+        borderColor: 'rgb(10,10,10)',
+        width: width,
+        height: height * 0.75,
+        flexDirection: 'row'
+    },
     send: {
         marginLeft: width * 0.03
     },
@@ -107,9 +130,6 @@ const styles = StyleSheet.create({
     lowerText:{
         color: 'white',
         fontSize: width * 0.05,
-        borderBottomWidth: height * 0.005,
-        borderColor: 'rgb(10,10,10)',
-        width: width
     },
     background: {
         backgroundColor:'rgb(40,40,40)'
