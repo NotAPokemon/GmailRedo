@@ -14,11 +14,11 @@ function app() {
   const [password, setPassword] = useState('')
   const [isClosed, setClosed] = useState(true)
   const [tabs, setTabs] = useState(['Loading tabs..'])
-  const [messages, setMessages] = useState([{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..'}])
+  const [messages, setMessages] = useState([{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..', 'seen': false}])
   const [folder, setFolder] = useState('')
 
 
-  const defaut = [{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..'}]
+  const defaut = [{'subject':'Loading Messages..', 'from': 'Loading Messages..', 'date': 'Loading Messages..', 'body':'Loading Messages..', 'seen' : false}]
 
   function openMenu(){
     setClosed(!isClosed)
@@ -98,21 +98,21 @@ function app() {
         setPassword(passwordS)
         if (folderS !==null){
           setFolder(folderS)
+          let data = await getFolders(emailS, passwordS)
+          // @ts-ignore
+          function removeExtra(data) {
+            // @ts-ignore
+            return data.map((str) => str.replace(/"/g, ''));
+          }
+          // @ts-ignore
+          function removeGmailLabels(arr) {
+            // @ts-ignore
+            return arr.filter(str => !str.includes('[Gmail]'));
+          }
+          setTabs(removeGmailLabels(removeExtra(data)))
           let mes = await getMessages(emailS, passwordS, folderS)
           setMessages(mes)
         }
-        let data = await getFolders(emailS, passwordS)
-        // @ts-ignore
-        function removeExtra(data) {
-          // @ts-ignore
-          return data.map((str) => str.replace(/"/g, ''));
-        }
-        // @ts-ignore
-        function removeGmailLabels(arr) {
-          // @ts-ignore
-          return arr.filter(str => !str.includes('[Gmail]'));
-        }
-        setTabs(removeGmailLabels(removeExtra(data)))
       } else {
         setIsLoggedIn(false);
         router.replace("/AuthHandler")
@@ -139,7 +139,7 @@ function app() {
               {Array.isArray(messages) && messages.length > 0 ? (
                   messages.map((item, index) => (
                     <TouchableOpacity key={index} onPress={() => readMessage(item)}>
-                      <View style={styles.messageContainer}>
+                      <View style={item.seen ? styles.messageContainerNew : styles.messageContainerSeen}>
                         <Text style={styles.messageSubject}>{item.subject}</Text>
                         <Text style={styles.messageFrom}>{item.from}</Text>
                         <Text style={styles.messageFrom}>{item.date}</Text>
@@ -166,7 +166,7 @@ function app() {
               ))}
             </ScrollView>
             <View style={styles.botomBar}>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={()=> router.navigate('/newLabel')}>
                 <Icon name='add' color= 'white'/>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => {openSettings()}}>
@@ -190,12 +190,22 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     backgroundColor: 'rgb(40,40,40)',
   },
-  messageContainer:{
+  messageContainerSeen:{
     height: height * 0.2,
     width: width * 0.8,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgb(60,60,60)',
+    borderRadius: height * 0.01,
+    marginLeft: width * 0.1,
+    marginBottom: height * 0.05,
+  },
+  messageContainerNew:{
+    height: height * 0.2,
+    width: width * 0.8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgb(60,90,60)',
     borderRadius: height * 0.01,
     marginLeft: width * 0.1,
     marginBottom: height * 0.05,
