@@ -43,7 +43,6 @@ class EmailHandler:
         status, labels = self.imap.list()
 
         if status == 'OK':
-            # Extract and print label names
             label_names = [label.decode().split(' "/" ')[-1] for label in labels]
             return label_names
         else:
@@ -59,12 +58,10 @@ class EmailHandler:
             raw_email = msg_data[0][1]
             flags = msg_data[0][0].decode('utf-8')
 
-            # Parse the raw email to get headers and body
             msg = email.message_from_bytes(raw_email)
 
             seen = '\\Seen' in flags
 
-            # Build the result dictionary safely
             messages.append({
                 "subject": msg.get("subject", "No Subject"),
                 "from": msg.get("from", "Unknown Sender"),
@@ -150,9 +147,9 @@ def get_body(msg):
             content_type = part.get_content_type()
             content_disposition = str(part.get("Content-Disposition"))
             if content_type == "text/plain" and "attachment" not in content_disposition:
-                return safe_decode(part.get_payload(decode=True))  # Decode byte content to string
+                return safe_decode(part.get_payload(decode=True))
     else:
-        return safe_decode(msg.get_payload(decode=True))  # For non-multipart messages
+        return safe_decode(msg.get_payload(decode=True))
     return ""
 
 def safe_decode(byte_content):
@@ -161,7 +158,7 @@ def safe_decode(byte_content):
         try:
             return byte_content.decode('utf-8')
         except UnicodeDecodeError:
-            return byte_content.decode('latin-1', errors='replace')  # Fallback to latin-1
+            return byte_content.decode('latin-1', errors='replace')
     return ""
 
 
