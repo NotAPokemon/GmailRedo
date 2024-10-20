@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, Dimensions, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Icon } from 'react-native-elements';
+import getAPI from './apiLink';
 
 
 const { width, height } = Dimensions.get('window');
@@ -35,7 +36,7 @@ function Settings() {
   }, []);
   async function handleSubmit(){
     try {
-        const response = await fetch('http://192.168.86.26:5555/open_folder', {
+        const response = await fetch('http://'+ getAPI() +'/open_folder', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

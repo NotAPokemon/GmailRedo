@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity, 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Icon } from 'react-native-elements';
 import { useState } from 'react';
+import getAPI from './apiLink';
 
 const { width, height } = Dimensions.get('window');
 
@@ -15,7 +16,7 @@ function NewFolder(){
     try {
         const email = await AsyncStorage.getItem('Email')
         const password = await AsyncStorage.getItem('Password')
-        const response = await fetch('http://192.168.86.26:5555/new_folder', {
+        const response = await fetch('http://'+ getAPI() +'/new_folder', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

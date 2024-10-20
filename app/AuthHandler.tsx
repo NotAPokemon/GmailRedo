@@ -2,6 +2,7 @@ import { Link, router, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, Dimensions, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getAPI from './apiLink';
 
 
 const { width, height } = Dimensions.get('window');
@@ -16,7 +17,7 @@ function AuthHandler() {
 
   async function handleSubmit(){
     try {
-        const response = await fetch('http://192.168.86.26:5555/login', {
+        const response = await fetch('http://'+ getAPI() + '/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

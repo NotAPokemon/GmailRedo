@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity, 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState, } from "react";
 import { Icon } from 'react-native-elements';
+import getAPI from './apiLink';
 
 
 const { width, height } = Dimensions.get('window');
@@ -66,7 +67,7 @@ function app() {
   // @ts-ignore
   async function getMessages(email, password, folder) {
     try {
-      const response = await fetch('http://192.168.86.26:5555/get_email', {
+      const response = await fetch('http://'+  getAPI() +'/get_email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
