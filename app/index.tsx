@@ -90,7 +90,7 @@ function app() {
   // @ts-ignore
   async function deleteFolder(name) {
     try {
-      const response = await fetch('http://192.168.86.26:5555/delete_folder', {
+      const response = await fetch('http://' + getAPI() +'/delete_folder', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
