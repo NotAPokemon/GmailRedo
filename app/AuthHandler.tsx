@@ -1,4 +1,4 @@
-import { Link, router, Stack, useRouter } from 'expo-router';
+import { router} from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, Dimensions, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';

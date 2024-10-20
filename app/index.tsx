@@ -1,4 +1,4 @@
-import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
+import {router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity, ScrollView,  } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState, } from "react";

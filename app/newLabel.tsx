@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity, ScrollView, TextInput,  } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, ImageBackground, TouchableOpacity, TextInput, } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Icon } from 'react-native-elements';
 import { useState } from 'react';
